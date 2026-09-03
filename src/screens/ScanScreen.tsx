@@ -1,20 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Image,
   ActivityIndicator,
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import { RNCamera } from 'react-native-camera';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { AppButton } from '../components/AppButton';
 import { useFaceDetection } from '../hooks/useFaceDetection';
 import { scanFace } from '../utils/scanApi';
-import { Colors, Spacing, Radius } from '../constants/theme';
+import { Colors, Spacing } from '../constants/theme';
 import type { RootStackScreenProps } from '../navigation/types';
 import type { ScanResult } from '../utils/types';
 
@@ -22,24 +22,29 @@ type Props = RootStackScreenProps<'Scan'>;
 type Step = 'camera' | 'preview' | 'working' | 'error';
 
 export default function ScanScreen({ navigation }: Props) {
-  const [permission, setPermission] = useState<boolean | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('camera');
   const [statusText, setStatusText] = useState('');
   const [errorText, setErrorText] = useState('');
 
-  const cameraRef = useRef<RNCamera>(null);
+  const cameraRef = useRef<Camera>(null);
   const { detectFace } = useFaceDetection();
+  const device = useCameraDevice('front');
+  const { hasPermission, requestPermission } = useCameraPermission();
+
+  useEffect(() => {
+    if (!hasPermission) {
+      requestPermission();
+    }
+  }, [hasPermission, requestPermission]);
 
   // ----- Take the photo -----
   async function takePhoto() {
     if (!cameraRef.current) return;
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.9 });
-      if (photo) {
-        setPhotoUri(photo.uri);
-        setStep('preview');
-      }
+      const photo = await cameraRef.current.takePhoto({ flash: 'off' });
+      setPhotoUri(`file://${photo.path}`);
+      setStep('preview');
     } catch {
       Alert.alert('Oops', "Couldn't take the photo. Please try again.");
     }
@@ -128,15 +133,35 @@ export default function ScanScreen({ navigation }: Props) {
     );
   }
 
+  // ----- No permission / no front camera available -----
+  if (!hasPermission || device == null) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <Icon name="camera-outline" size={56} color={Colors.textSecondary} />
+        <Text style={styles.title}>
+          {hasPermission ? 'No front camera found' : 'Camera permission needed'}
+        </Text>
+        <Text style={styles.subtitle}>
+          {hasPermission
+            ? "We couldn't find a front-facing camera on this device."
+            : 'Please allow camera access to scan your face.'}
+        </Text>
+        {!hasPermission && (
+          <AppButton label="Grant Permission" onPress={requestPermission} style={{ marginTop: Spacing.lg }} />
+        )}
+      </SafeAreaView>
+    );
+  }
+
   // ----- Camera step (default) -----
   return (
     <View style={styles.container}>
-      <RNCamera
+      <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
-        type={RNCamera.Constants.Type.front}
-        flashMode={RNCamera.Constants.FlashMode.off}
-        captureAudio={false}
+        device={device}
+        isActive={step === 'camera'}
+        photo={true}
       />
 
       {/* A simple oval guide so people know where to put their face */}

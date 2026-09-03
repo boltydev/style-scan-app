@@ -1,9 +1,5 @@
 import { useState, useCallback } from 'react';
-import FaceDetection, {
-  FaceDetectorContourMode,
-  FaceDetectorLandmarkMode,
-  FaceDetectorPerformanceMode,
-} from '@react-native-ml-kit/face-detection';
+import FaceDetection from '@react-native-ml-kit/face-detection';
 import type { FaceGeometry } from '../utils/types';
 
 export function useFaceDetection() {
@@ -14,10 +10,10 @@ export function useFaceDetection() {
     setDetecting(true);
     try {
       const faces = await FaceDetection.detect(photoUri, {
-        performanceMode: FaceDetectorPerformanceMode.ACCURATE,
-        landmarkMode: FaceDetectorLandmarkMode.ALL,
-        contourMode: FaceDetectorContourMode.ALL,
-        classificationMode: true,
+        performanceMode: 'accurate',
+        landmarkMode: 'all',
+        contourMode: 'all',
+        classificationMode: 'all',
         minFaceSize: 0.1,
       });
 
@@ -35,8 +31,8 @@ export function useFaceDetection() {
           width: main.frame.width,
           height: main.frame.height,
         },
-        rollAngle: main.rollAngle ?? 0,
-        yawAngle: main.yawAngle ?? 0,
+        rollAngle: main.rotationZ ?? 0,
+        yawAngle: main.rotationY ?? 0,
         smilingProbability: main.smilingProbability,
       };
     } finally {
