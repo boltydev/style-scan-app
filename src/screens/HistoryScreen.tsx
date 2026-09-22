@@ -5,31 +5,37 @@ import React, {
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
+  StyleSheet,ScrollView,
   Pressable,
 } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import type { RootStackScreenProps } from '../navigation/types';
+import type {
+  RootStackScreenProps,
+} from '../navigation/types';
 
 type Props =
   RootStackScreenProps<'History'>;
 
 const COLORS = {
-  background: '#090B12',
-  surface: '#131722',
-  surfaceLight: '#191E2B',
-  border: '#292F3F',
+  background: '#070911',
+  backgroundSoft: '#0B0E18',
+
+  surface: '#111522',
+  surfaceLight: '#171C2B',
+
+  border: 'rgba(255,255,255,0.08)',
+  borderBlue: 'rgba(98,132,255,0.28)',
 
   primary: '#7357FF',
   primaryBlue: '#6284FF',
 
-  text: '#F7F7FA',
-  secondary: '#A7ADBD',
-  muted: '#72798B',
+  text: '#F7F8FC',
+  secondary: '#A5ACBC',
+  muted: '#6F7688',
 
   success: '#45D6A6',
 };
@@ -45,101 +51,215 @@ export default function HistoryScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Ambient Background */}
 
-      <View style={styles.header}>
-        <Pressable
-          style={styles.headerButton}
-          onPress={() =>
-            navigation.goBack()
-          }
-        >
-          <Ionicons
-            name="chevron-back"
-            size={25}
-            color={COLORS.text}
-          />
-        </Pressable>
+      <View
+        pointerEvents="none"
+        style={styles.ambientTop}
+      />
 
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>
-            HISTORY
-          </Text>
-
-          <Text style={styles.headerSubtitle}>
-            Your StyleScan activity
-          </Text>
-        </View>
-
-        <Pressable
-          style={styles.headerButton}
-          onPress={() =>
-            navigation.navigate('Home')
-          }
-        >
-          <Ionicons
-            name="home-outline"
-            size={22}
-            color={COLORS.text}
-          />
-        </Pressable>
-      </View>
+      <View
+        pointerEvents="none"
+        style={styles.ambientSide}
+      />
 
       <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
+
+        <View style={styles.header}>
+          <Pressable
+            style={styles.headerButton}
+            onPress={() =>
+              navigation.goBack()
+            }
+          >
+            <Ionicons
+              name="chevron-back"
+              size={25}
+              color={COLORS.text}
+            />
+          </Pressable>
+
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>
+              STYLESCAN
+            </Text>
+
+            <Text
+              style={styles.headerSubtitle}
+            >
+              Scan History
+            </Text>
+          </View>
+
+          <Pressable
+            style={styles.headerButton}
+            onPress={() =>
+              navigation.navigate('Home')
+            }
+          >
+            <Ionicons
+              name="home-outline"
+              size={22}
+              color={COLORS.text}
+            />
+          </Pressable>
+        </View>
+
         {/* Intro */}
 
-        <View style={styles.intro}>
-          <Text style={styles.pageTitle}>
-            Your scan history.
-          </Text>
+        <View style={styles.statusBadge}>
+          <View style={styles.statusDot} />
 
-          <Text style={styles.pageSubtitle}>
-            Revisit your previous StyleScan
-            results and recommendations.
+          <Text style={styles.statusText}>
+            YOUR STYLE JOURNEY
           </Text>
+        </View>
+
+        <Text style={styles.pageTitle}>
+          Your scan history.
+        </Text>
+
+        <Text style={styles.pageSubtitle}>
+          Revisit your StyleScan activity,
+          compare results, and track the looks
+          that fit you best.
+        </Text>
+
+        {/* History Dashboard */}
+
+        <View style={styles.dashboardCard}>
+          <View style={styles.dashboardGlow} />
+
+          <View
+            style={styles.dashboardHeader}
+          >
+            <View
+              style={styles.dashboardIcon}
+            >
+              <Ionicons
+                name="time-outline"
+                size={25}
+                color={COLORS.primaryBlue}
+              />
+            </View>
+
+            <View
+              style={styles.dashboardHeading}
+            >
+              <Text
+                style={
+                  styles.dashboardEyebrow
+                }
+              >
+                STYLESCAN HISTORY
+              </Text>
+
+              <Text
+                style={
+                  styles.dashboardTitle
+                }
+              >
+                Your activity at a glance.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.statsRow}>
+            <HistoryStat
+              value="0"
+              label="Saved Scans"
+            />
+
+            <View
+              style={styles.statDivider}
+            />
+
+            <HistoryStat
+              value="0"
+              label="Style Profiles"
+            />
+
+            <View
+              style={styles.statDivider}
+            />
+
+            <HistoryStat
+              value="0"
+              label="Saved Looks"
+            />
+          </View>
         </View>
 
         {/* Empty State */}
 
         <View style={styles.emptyCard}>
-          <View style={styles.emptyGlow}>
-            <View style={styles.emptyIcon}>
-              <Ionicons
-                name="time-outline"
-                size={42}
-                color={COLORS.primaryBlue}
-              />
+          <View style={styles.emptyVisual}>
+            <View style={styles.emptyOrbit}>
+              <View
+                style={styles.emptyOrbitInner}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={39}
+                  color={COLORS.primaryBlue}
+                />
+              </View>
             </View>
           </View>
 
+          <View style={styles.emptyBadge}>
+            <Ionicons
+              name="sparkles-outline"
+              size={14}
+              color={COLORS.primaryBlue}
+            />
+
+            <Text
+              style={styles.emptyBadgeText}
+            >
+              READY WHEN YOU ARE
+            </Text>
+          </View>
+
           <Text style={styles.emptyTitle}>
-            No saved scans yet
+            Your first scan starts here.
           </Text>
 
           <Text style={styles.emptyText}>
-            Scan history storage hasn't been
-            connected yet. Once that feature is
-            added, previous results can appear
-            here.
+            Your completed StyleScan sessions
+            will appear here when saved history
+            becomes available.
           </Text>
 
           <Pressable
-            style={styles.scanButton}
+            style={({ pressed }) => [
+              styles.scanButton,
+              pressed &&
+                styles.scanButtonPressed,
+            ]}
             onPress={() =>
               navigation.navigate('Scan')
             }
           >
-            <Ionicons
-              name="scan-outline"
-              size={21}
-              color="#FFFFFF"
-            />
+            <View
+              style={styles.scanButtonIcon}
+            >
+              <Ionicons
+                name="scan-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
 
-            <Text style={styles.scanButtonText}>
-              Start a Face Scan
+            <Text
+              style={styles.scanButtonText}
+            >
+              Start Your First Scan
             </Text>
 
             <Ionicons
@@ -150,79 +270,244 @@ export default function HistoryScreen({
           </Pressable>
         </View>
 
-        {/* Future Feature Preview */}
+        {/* History Features */}
 
-        <Text style={styles.sectionEyebrow}>
-          HISTORY FEATURES
-        </Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionEyebrow}>
+            HISTORY EXPERIENCE
+          </Text>
 
-        <Text style={styles.sectionTitle}>
-          Designed for easy comparison.
-        </Text>
+          <Text style={styles.sectionTitle}>
+            Built for comparison.
+          </Text>
 
-        <FeatureCard
-          icon="person-outline"
-          title="Past Scan Results"
-          description="Review previous face-shape, skin-tone, and facial-hair analysis."
+          <Text
+            style={styles.sectionSubtitle}
+          >
+            Your history can become a personal
+            timeline for revisiting scans,
+            recommendations, and favorite looks.
+          </Text>
+        </View>
+
+        <HistoryFeature
+          number="01"
+          icon="document-text-outline"
+          title="Past Analysis"
+          description="Return to previous face-shape, complexion, and facial-hair results."
         />
 
-        <FeatureCard
+        <HistoryFeature
+          number="02"
           icon="sparkles-outline"
-          title="Style Recommendations"
-          description="Return to hairstyles and facial-hair recommendations from earlier scans."
+          title="Recommendation History"
+          description="Revisit hairstyle and facial-hair suggestions from earlier StyleScan sessions."
         />
 
-        <FeatureCard
+        <HistoryFeature
+          number="03"
           icon="git-compare-outline"
-          title="Compare Your Looks"
-          description="Future history support can make it easier to compare results over time."
+          title="Compare Profiles"
+          description="Compare different scans and grooming choices over time."
         />
 
-        {/* Info Banner */}
+        <HistoryFeature
+          number="04"
+          icon="bookmark-outline"
+          title="Favorite Looks"
+          description="Keep the styles you want to remember in one convenient place."
+        />
 
-        <View style={styles.infoBanner}>
+        {/* Style Timeline */}
+
+        <View style={styles.timelineCard}>
+          <View style={styles.timelineGlow} />
+
+          <View style={styles.timelineHeader}>
+            <View
+              style={styles.timelineHeaderIcon}
+            >
+              <Ionicons
+                name="analytics-outline"
+                size={23}
+                color={COLORS.primaryBlue}
+              />
+            </View>
+
+            <View
+              style={styles.timelineHeading}
+            >
+              <Text
+                style={styles.timelineEyebrow}
+              >
+                YOUR STYLE JOURNEY
+              </Text>
+
+              <Text
+                style={styles.timelineTitle}
+              >
+                A timeline built around you.
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.timelineText}>
+            As you complete future StyleScan
+            sessions, this space can give you a
+            simple way to revisit how your
+            grooming profile evolves.
+          </Text>
+
+          <View
+            style={styles.timelinePreview}
+          >
+            <TimelinePreviewItem
+              icon="scan-outline"
+              title="Face Scan"
+              status="Scan analysis"
+            />
+
+            <View
+              style={styles.previewConnector}
+            />
+
+            <TimelinePreviewItem
+              icon="sparkles-outline"
+              title="Style Profile"
+              status="Recommendations"
+            />
+
+            <View
+              style={styles.previewConnector}
+            />
+
+            <TimelinePreviewItem
+              icon="bookmark-outline"
+              title="Saved Look"
+              status="Favorites"
+            />
+          </View>
+        </View>
+
+        {/* History Availability */}
+
+        <View style={styles.infoCard}>
           <View style={styles.infoIcon}>
             <Ionicons
-              name="construct-outline"
-              size={20}
+              name="time-outline"
+              size={22}
               color={COLORS.primaryBlue}
             />
           </View>
 
           <View style={styles.infoContent}>
+            <Text style={styles.infoEyebrow}>
+              COMING TO HISTORY
+            </Text>
+
             <Text style={styles.infoTitle}>
-              History is being prepared
+              Your StyleScan timeline.
             </Text>
 
             <Text style={styles.infoText}>
-              The interface is ready, but saved
-              scan storage still needs to be
-              connected to the app.
+              Saved scan history will give you
+              one place to revisit previous
+              profiles and recommendations.
             </Text>
           </View>
         </View>
       </ScrollView>
+
+      {/* True Floating Navigation */}
+
+      <View style={styles.navShell}>
+        <NavItem
+          icon="home-outline"
+          label="Home"
+          onPress={() =>
+            navigation.navigate('Home')
+          }
+        />
+
+        <NavItem
+          icon="scan-outline"
+          label="Scan"
+          onPress={() =>
+            navigation.navigate('Scan')
+          }
+        />
+
+        <NavItem
+          icon="time"
+          label="History"
+          active
+        />
+
+        <NavItem
+          icon="person-outline"
+          label="About"
+          onPress={() =>
+            navigation.navigate('About')
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 }
 
-type FeatureCardProps = {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  description: string;
-};
+// ------------------------------------------------------
+// History Stat
+// ------------------------------------------------------
 
-function FeatureCard({
+function HistoryStat({
+  value,
+  label,
+}: {
+  value: string;
+  label: string;
+}) {
+  return (
+    <View style={styles.historyStat}>
+      <Text style={styles.historyStatValue}>
+        {value}
+      </Text>
+
+      <Text style={styles.historyStatLabel}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+// ------------------------------------------------------
+// History Feature
+// ------------------------------------------------------
+
+function HistoryFeature({
+  number,
   icon,
   title,
   description,
-}: FeatureCardProps) {
+}: {
+  number: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  description: string;
+}) {
   return (
     <View style={styles.featureCard}>
+      <View style={styles.featureNumber}>
+        <Text
+          style={styles.featureNumberText}
+        >
+          {number}
+        </Text>
+      </View>
+
       <View style={styles.featureIcon}>
         <Ionicons
           name={icon}
-          size={23}
+          size={22}
           color={COLORS.primaryBlue}
         />
       </View>
@@ -232,13 +517,114 @@ function FeatureCard({
           {title}
         </Text>
 
-        <Text style={styles.featureDescription}>
+        <Text
+          style={styles.featureDescription}
+        >
           {description}
         </Text>
       </View>
+
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={COLORS.muted}
+      />
     </View>
   );
 }
+
+// ------------------------------------------------------
+// Timeline Preview Item
+// ------------------------------------------------------
+
+function TimelinePreviewItem({
+  icon,
+  title,
+  status,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  status: string;
+}) {
+  return (
+    <View style={styles.previewItem}>
+      <View style={styles.previewIcon}>
+        <Ionicons
+          name={icon}
+          size={20}
+          color={COLORS.primaryBlue}
+        />
+      </View>
+
+      <View style={styles.previewContent}>
+        <Text style={styles.previewTitle}>
+          {title}
+        </Text>
+
+        <Text style={styles.previewStatus}>
+          {status}
+        </Text>
+      </View>
+
+      <View style={styles.previewDot} />
+    </View>
+  );
+}
+
+// ------------------------------------------------------
+// Nav Item
+// ------------------------------------------------------
+
+function NavItem({
+  icon,
+  label,
+  active = false,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  active?: boolean;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      style={styles.navItem}
+      onPress={onPress}
+    >
+      <View
+        style={[
+          styles.navIconContainer,
+          active &&
+            styles.navIconActive,
+        ]}
+      >
+        <Ionicons
+          name={icon}
+          size={22}
+          color={
+            active
+              ? COLORS.primaryBlue
+              : COLORS.muted
+          }
+        />
+      </View>
+
+      <Text
+        style={[
+          styles.navLabel,
+          active &&
+            styles.navLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+// ------------------------------------------------------
+// Styles
+// ------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: {
@@ -246,16 +632,46 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
 
+  scrollView: {
+    flex: 1,
+  },
+
+  ambientTop: {
+    position: 'absolute',
+    width: 350,
+    height: 350,
+    borderRadius: 175,
+    backgroundColor:
+      'rgba(98,132,255,0.055)',
+    top: -175,
+    right: -100,
+  },
+
+  ambientSide: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor:
+      'rgba(115,87,255,0.035)',
+    top: 650,
+    left: -190,
+  },
+
   content: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+
+    /*
+      Extra room for the floating
+      navigation bar.
+    */
+    paddingBottom: 125,
   },
 
   // Header
 
   header: {
     height: 72,
-    paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -264,8 +680,9 @@ const styles = StyleSheet.create({
   headerButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.surface,
+    borderRadius: 15,
+    backgroundColor:
+      'rgba(255,255,255,0.035)',
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
@@ -278,186 +695,98 @@ const styles = StyleSheet.create({
 
   headerTitle: {
     color: COLORS.text,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 2.7,
+    letterSpacing: 3,
   },
 
   headerSubtitle: {
-    marginTop: 2,
     color: COLORS.secondary,
-    fontSize: 11,
+    fontSize: 10,
+    marginTop: 2,
   },
 
   // Intro
 
-  intro: {
-    marginTop: 18,
-    marginBottom: 22,
+  statusBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      'rgba(98,132,255,0.07)',
+    borderWidth: 1,
+    borderColor:
+      'rgba(98,132,255,0.14)',
+    borderRadius: 18,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor:
+      COLORS.primaryBlue,
+    marginRight: 7,
+  },
+
+  statusText: {
+    color: COLORS.primaryBlue,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.3,
   },
 
   pageTitle: {
     color: COLORS.text,
-    fontSize: 29,
+    fontSize: 32,
     fontWeight: '700',
-    letterSpacing: -0.6,
+    letterSpacing: -0.8,
+    marginTop: 17,
   },
 
   pageSubtitle: {
     color: COLORS.secondary,
     fontSize: 14,
-    lineHeight: 21,
-    marginTop: 7,
-    maxWidth: 340,
-  },
-
-  // Empty State
-
-  emptyCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 22,
-    paddingVertical: 28,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-
-  emptyGlow: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor:
-      'rgba(98,132,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  emptyIcon: {
-    width: 78,
-    height: 78,
-    borderRadius: 24,
-    backgroundColor: '#171D31',
-    borderWidth: 1,
-    borderColor:
-      'rgba(98,132,255,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  emptyTitle: {
-    color: COLORS.text,
-    fontSize: 21,
-    fontWeight: '700',
-    marginTop: 18,
-  },
-
-  emptyText: {
-    color: COLORS.secondary,
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: 'center',
+    lineHeight: 22,
     marginTop: 8,
-    maxWidth: 310,
+    marginBottom: 23,
+    maxWidth: 345,
   },
 
-  scanButton: {
-    width: '100%',
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 17,
-    marginTop: 23,
-  },
+  // Dashboard
 
-  scanButtonText: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-
-  // Section
-
-  sectionEyebrow: {
-    color: COLORS.primaryBlue,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-  },
-
-  sectionTitle: {
-    color: COLORS.text,
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 4,
-    marginBottom: 14,
-  },
-
-  // Feature Cards
-
-  featureCard: {
-    minHeight: 92,
-    backgroundColor: COLORS.surface,
-    borderRadius: 17,
+  dashboardCard: {
+    backgroundColor: '#0E1426',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 15,
+    borderColor: COLORS.borderBlue,
+    borderRadius: 23,
+    padding: 18,
+    overflow: 'hidden',
+  },
+
+  dashboardGlow: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor:
+      'rgba(98,132,255,0.045)',
+    top: -100,
+    right: -80,
+  },
+
+  dashboardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 11,
   },
 
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: '#171D31',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-
-  featureContent: {
-    flex: 1,
-  },
-
-  featureTitle: {
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-
-  featureDescription: {
-    color: COLORS.secondary,
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: 4,
-  },
-
-  // Info
-
-  infoBanner: {
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 17,
-    backgroundColor: '#111629',
-    borderWidth: 1,
-    borderColor:
-      'rgba(98,132,255,0.25)',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-
-  infoIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+  dashboardIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     backgroundColor:
       'rgba(98,132,255,0.10)',
     alignItems: 'center',
@@ -465,20 +794,487 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 
-  infoContent: {
+  dashboardHeading: {
     flex: 1,
   },
 
-  infoTitle: {
+  dashboardEyebrow: {
+    color: COLORS.primaryBlue,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.3,
+  },
+
+  dashboardTitle: {
+    color: COLORS.text,
+    fontSize: 17,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
+  statsRow: {
+    height: 78,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor:
+      'rgba(255,255,255,0.025)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 18,
+  },
+
+  historyStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  historyStatValue: {
+    color: COLORS.text,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+
+  historyStatLabel: {
+    color: COLORS.muted,
+    fontSize: 8,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  statDivider: {
+    width: 1,
+    height: 34,
+    backgroundColor: COLORS.border,
+  },
+
+  // Empty State
+
+  emptyCard: {
+    marginTop: 15,
+    backgroundColor: COLORS.surface,
+    borderRadius: 23,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 20,
+    alignItems: 'center',
+  },
+
+  emptyVisual: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+
+  emptyOrbit: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    borderWidth: 1,
+    borderColor:
+      'rgba(98,132,255,0.13)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  emptyOrbitInner: {
+    width: 78,
+    height: 78,
+    borderRadius: 25,
+    backgroundColor:
+      'rgba(98,132,255,0.08)',
+    borderWidth: 1,
+    borderColor:
+      'rgba(98,132,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  emptyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 19,
+  },
+
+  emptyBadgeText: {
+    color: COLORS.primaryBlue,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    marginLeft: 6,
+  },
+
+  emptyTitle: {
+    color: COLORS.text,
+    fontSize: 21,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 9,
+  },
+
+  emptyText: {
+    color: COLORS.secondary,
+    fontSize: 12,
+    lineHeight: 19,
+    textAlign: 'center',
+    maxWidth: 320,
+    marginTop: 8,
+  },
+
+  scanButton: {
+    width: '100%',
+    height: 58,
+    borderRadius: 17,
+    backgroundColor: COLORS.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginTop: 22,
+
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+  },
+
+  scanButtonPressed: {
+    opacity: 0.84,
+    transform: [
+      { scale: 0.99 },
+    ],
+  },
+
+  scanButtonIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor:
+      'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  scanButtonText: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+  // Sections
+
+  sectionHeader: {
+    marginTop: 31,
+    marginBottom: 14,
+  },
+
+  sectionEyebrow: {
+    color: COLORS.primaryBlue,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.4,
+  },
+
+  sectionTitle: {
+    color: COLORS.text,
+    fontSize: 21,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+
+  sectionSubtitle: {
+    color: COLORS.secondary,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 5,
+  },
+
+  // Feature Cards
+
+  featureCard: {
+    minHeight: 88,
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  featureNumber: {
+    width: 29,
+  },
+
+  featureNumberText: {
+    color: COLORS.muted,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+
+  featureIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 14,
+    backgroundColor:
+      'rgba(98,132,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  featureContent: {
+    flex: 1,
+    paddingVertical: 13,
+  },
+
+  featureTitle: {
     color: COLORS.text,
     fontSize: 14,
     fontWeight: '700',
   },
 
+  featureDescription: {
+    color: COLORS.secondary,
+    fontSize: 10,
+    lineHeight: 16,
+    marginTop: 4,
+  },
+
+  // Timeline
+
+  timelineCard: {
+    marginTop: 19,
+    borderRadius: 22,
+    backgroundColor: '#0E1426',
+    borderWidth: 1,
+    borderColor: COLORS.borderBlue,
+    padding: 17,
+    overflow: 'hidden',
+  },
+
+  timelineGlow: {
+    position: 'absolute',
+    width: 210,
+    height: 210,
+    borderRadius: 105,
+    backgroundColor:
+      'rgba(98,132,255,0.04)',
+    top: -100,
+    right: -80,
+  },
+
+  timelineHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  timelineHeaderIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 15,
+    backgroundColor:
+      'rgba(98,132,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  timelineHeading: {
+    flex: 1,
+  },
+
+  timelineEyebrow: {
+    color: COLORS.primaryBlue,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.3,
+  },
+
+  timelineTitle: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
+  timelineText: {
+    color: COLORS.secondary,
+    fontSize: 11,
+    lineHeight: 18,
+    marginTop: 14,
+  },
+
+  timelinePreview: {
+    marginTop: 17,
+  },
+
+  previewItem: {
+    minHeight: 58,
+    borderRadius: 15,
+    backgroundColor:
+      'rgba(255,255,255,0.025)',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+
+  previewIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor:
+      'rgba(98,132,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+
+  previewContent: {
+    flex: 1,
+  },
+
+  previewTitle: {
+    color: COLORS.text,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  previewStatus: {
+    color: COLORS.muted,
+    fontSize: 9,
+    marginTop: 2,
+  },
+
+  previewDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor:
+      'rgba(98,132,255,0.45)',
+  },
+
+  previewConnector: {
+    width: 1,
+    height: 10,
+    backgroundColor:
+      'rgba(98,132,255,0.18)',
+    marginLeft: 30,
+  },
+
+  // Information
+
+  infoCard: {
+    marginTop: 14,
+    borderRadius: 19,
+    backgroundColor:
+      'rgba(98,132,255,0.035)',
+    borderWidth: 1,
+    borderColor:
+      'rgba(98,132,255,0.13)',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  infoIcon: {
+    width: 43,
+    height: 43,
+    borderRadius: 13,
+    backgroundColor:
+      'rgba(98,132,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 11,
+  },
+
+  infoContent: {
+    flex: 1,
+  },
+
+  infoEyebrow: {
+    color: COLORS.primaryBlue,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+
+  infoTitle: {
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
   infoText: {
     color: COLORS.secondary,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 10,
+    lineHeight: 16,
     marginTop: 4,
+  },
+
+  // True Floating Nav
+
+  navShell: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 7,
+
+    height: 76,
+    borderRadius: 24,
+
+    backgroundColor:
+      'rgba(13,16,26,0.98)',
+
+    borderWidth: 1,
+    borderColor:
+      'rgba(255,255,255,0.08)',
+
+    flexDirection: 'row',
+
+    shadowColor: '#000000',
+    shadowOpacity: 0.4,
+    shadowRadius: 22,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+
+    elevation: 10,
+  },
+
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  navIconContainer: {
+    width: 38,
+    height: 31,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  navIconActive: {
+    backgroundColor:
+      'rgba(98,132,255,0.10)',
+  },
+
+  navLabel: {
+    color: COLORS.muted,
+    fontSize: 9,
+    marginTop: 3,
+  },
+
+  navLabelActive: {
+    color: COLORS.primaryBlue,
+    fontWeight: '700',
   },
 });
