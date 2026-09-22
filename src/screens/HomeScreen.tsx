@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   View,
   Text,
@@ -7,10 +8,15 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import type { RootStackScreenProps } from '../navigation/types';
 
-type Props = RootStackScreenProps<'Home'>;
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+import type {
+  RootStackScreenProps,
+} from '../navigation/types';
+
+type Props =
+  RootStackScreenProps<'Home'>;
 
 const COLORS = {
   background: '#090B12',
@@ -24,7 +30,9 @@ const COLORS = {
   muted: '#72798B',
 };
 
-export default function HomeScreen({ navigation }: Props) {
+export default function HomeScreen({
+  navigation,
+}: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -32,6 +40,7 @@ export default function HomeScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
+
         <View style={styles.header}>
           <Pressable style={styles.headerIcon}>
             <Ionicons
@@ -41,11 +50,15 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </Pressable>
 
-          <Text style={styles.logo}>STYLE SCAN</Text>
+          <Text style={styles.logo}>
+            STYLE SCAN
+          </Text>
 
           <Pressable
             style={styles.headerIcon}
-            onPress={() => navigation.navigate('About')}
+            onPress={() =>
+              navigation.navigate('About')
+            }
           >
             <Ionicons
               name="information-circle-outline"
@@ -56,22 +69,51 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
 
         {/* Welcome */}
+
         <View style={styles.welcome}>
           <Text style={styles.welcomeTitle}>
             Find your perfect look.
           </Text>
 
-          <Text style={styles.welcomeSubtitle}>
-            AI-powered grooming recommendations made for your features.
+          <Text
+            style={styles.welcomeSubtitle}
+          >
+            AI-powered grooming
+            recommendations made for your
+            features.
           </Text>
         </View>
 
         {/* Main Scan Card */}
+
         <View style={styles.scanCard}>
-          <View style={[styles.corner, styles.topLeft]} />
-          <View style={[styles.corner, styles.topRight]} />
-          <View style={[styles.corner, styles.bottomLeft]} />
-          <View style={[styles.corner, styles.bottomRight]} />
+          <View
+            style={[
+              styles.corner,
+              styles.topLeft,
+            ]}
+          />
+
+          <View
+            style={[
+              styles.corner,
+              styles.topRight,
+            ]}
+          />
+
+          <View
+            style={[
+              styles.corner,
+              styles.bottomLeft,
+            ]}
+          />
+
+          <View
+            style={[
+              styles.corner,
+              styles.bottomRight,
+            ]}
+          />
 
           <View style={styles.faceIcon}>
             <Ionicons
@@ -81,17 +123,24 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </View>
 
-          <Text style={styles.scanCardTitle}>
+          <Text
+            style={styles.scanCardTitle}
+          >
             Ready for your scan?
           </Text>
 
-          <Text style={styles.scanCardText}>
-            Position your face in the frame to get started.
+          <Text
+            style={styles.scanCardText}
+          >
+            Position your face in the frame
+            to get started.
           </Text>
 
           <Pressable
             style={styles.primaryButton}
-            onPress={() => navigation.navigate('Scan')}
+            onPress={() =>
+              navigation.navigate('Scan')
+            }
           >
             <Ionicons
               name="scan-outline"
@@ -99,13 +148,18 @@ export default function HomeScreen({ navigation }: Props) {
               color="#FFFFFF"
             />
 
-            <Text style={styles.primaryButtonText}>
+            <Text
+              style={
+                styles.primaryButtonText
+              }
+            >
               Scan My Face
             </Text>
           </Pressable>
         </View>
 
         {/* Actions */}
+
         <Text style={styles.sectionTitle}>
           WHAT WOULD YOU LIKE TO DO?
         </Text>
@@ -114,24 +168,40 @@ export default function HomeScreen({ navigation }: Props) {
           icon="scan-outline"
           title="Scan My Face"
           subtitle="Analyze your facial features"
-          onPress={() => navigation.navigate('Scan')}
+          onPress={() =>
+            navigation.navigate('Scan')
+          }
         />
 
         <ActionCard
           icon="sparkles-outline"
           title="Style Recommendations"
           subtitle="Discover styles designed for you"
-          onPress={() => navigation.navigate('Scan')}
+          onPress={() =>
+            navigation.navigate('Scan')
+          }
+        />
+
+        <ActionCard
+          icon="time-outline"
+          title="Scan History"
+          subtitle="Review your StyleScan activity"
+          onPress={() =>
+            navigation.navigate('History')
+          }
         />
 
         <ActionCard
           icon="information-circle-outline"
           title="About StyleScan"
           subtitle="Learn how the technology works"
-          onPress={() => navigation.navigate('About')}
+          onPress={() =>
+            navigation.navigate('About')
+          }
         />
 
         {/* AI Info */}
+
         <View style={styles.aiBanner}>
           <View style={styles.aiIcon}>
             <Ionicons
@@ -141,19 +211,25 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </View>
 
-          <View style={styles.aiTextContainer}>
+          <View
+            style={styles.aiTextContainer}
+          >
             <Text style={styles.aiTitle}>
               AI-Powered Analysis
             </Text>
 
-            <Text style={styles.aiSubtitle}>
-              Personalized recommendations based on your unique features.
+            <Text
+              style={styles.aiSubtitle}
+            >
+              Personalized recommendations
+              based on your unique features.
             </Text>
           </View>
         </View>
       </ScrollView>
 
       {/* Bottom Navigation */}
+
       <View style={styles.bottomNav}>
         <NavItem
           icon="home"
@@ -164,18 +240,25 @@ export default function HomeScreen({ navigation }: Props) {
         <NavItem
           icon="scan-outline"
           label="Scan"
-          onPress={() => navigation.navigate('Scan')}
+          onPress={() =>
+            navigation.navigate('Scan')
+          }
         />
 
         <NavItem
           icon="time-outline"
           label="History"
+          onPress={() =>
+            navigation.navigate('History')
+          }
         />
 
         <NavItem
           icon="person-outline"
           label="About"
-          onPress={() => navigation.navigate('About')}
+          onPress={() =>
+            navigation.navigate('About')
+          }
         />
       </View>
     </SafeAreaView>
@@ -213,7 +296,9 @@ function ActionCard({
           {title}
         </Text>
 
-        <Text style={styles.actionSubtitle}>
+        <Text
+          style={styles.actionSubtitle}
+        >
           {subtitle}
         </Text>
       </View>
@@ -248,13 +333,18 @@ function NavItem({
       <Ionicons
         name={icon}
         size={23}
-        color={active ? COLORS.primaryBlue : COLORS.muted}
+        color={
+          active
+            ? COLORS.primaryBlue
+            : COLORS.muted
+        }
       />
 
       <Text
         style={[
           styles.navLabel,
-          active && styles.navLabelActive,
+          active &&
+            styles.navLabelActive,
         ]}
       >
         {label}
@@ -331,7 +421,8 @@ const styles = StyleSheet.create({
     height: 88,
     width: 88,
     borderRadius: 44,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor:
+      COLORS.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
