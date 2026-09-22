@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   View,
@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Pressable,
+  Modal,
 } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -23,8 +24,10 @@ const COLORS = {
   surface: '#131722',
   surfaceLight: '#191E2B',
   border: '#292F3F',
+
   primary: '#7357FF',
   primaryBlue: '#6284FF',
+
   text: '#F7F7FA',
   secondary: '#A7ADBD',
   muted: '#72798B',
@@ -33,6 +36,28 @@ const COLORS = {
 export default function HomeScreen({
   navigation,
 }: Props) {
+  const [menuVisible, setMenuVisible] =
+    useState(false);
+
+  function closeMenu() {
+    setMenuVisible(false);
+  }
+
+  function goToScan() {
+    closeMenu();
+    navigation.navigate('Scan');
+  }
+
+  function goToHistory() {
+    closeMenu();
+    navigation.navigate('History');
+  }
+
+  function goToAbout() {
+    closeMenu();
+    navigation.navigate('About');
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -42,7 +67,12 @@ export default function HomeScreen({
         {/* Header */}
 
         <View style={styles.header}>
-          <Pressable style={styles.headerIcon}>
+          <Pressable
+            style={styles.headerIcon}
+            onPress={() =>
+              setMenuVisible(true)
+            }
+          >
             <Ionicons
               name="menu-outline"
               size={27}
@@ -56,9 +86,7 @@ export default function HomeScreen({
 
           <Pressable
             style={styles.headerIcon}
-            onPress={() =>
-              navigation.navigate('About')
-            }
+            onPress={goToAbout}
           >
             <Ionicons
               name="information-circle-outline"
@@ -138,9 +166,7 @@ export default function HomeScreen({
 
           <Pressable
             style={styles.primaryButton}
-            onPress={() =>
-              navigation.navigate('Scan')
-            }
+            onPress={goToScan}
           >
             <Ionicons
               name="scan-outline"
@@ -168,36 +194,28 @@ export default function HomeScreen({
           icon="scan-outline"
           title="Scan My Face"
           subtitle="Analyze your facial features"
-          onPress={() =>
-            navigation.navigate('Scan')
-          }
+          onPress={goToScan}
         />
 
         <ActionCard
           icon="sparkles-outline"
           title="Style Recommendations"
           subtitle="Discover styles designed for you"
-          onPress={() =>
-            navigation.navigate('Scan')
-          }
+          onPress={goToScan}
         />
 
         <ActionCard
           icon="time-outline"
           title="Scan History"
           subtitle="Review your StyleScan activity"
-          onPress={() =>
-            navigation.navigate('History')
-          }
+          onPress={goToHistory}
         />
 
         <ActionCard
           icon="information-circle-outline"
           title="About StyleScan"
           subtitle="Learn how the technology works"
-          onPress={() =>
-            navigation.navigate('About')
-          }
+          onPress={goToAbout}
         />
 
         {/* AI Info */}
@@ -240,30 +258,131 @@ export default function HomeScreen({
         <NavItem
           icon="scan-outline"
           label="Scan"
-          onPress={() =>
-            navigation.navigate('Scan')
-          }
+          onPress={goToScan}
         />
 
         <NavItem
           icon="time-outline"
           label="History"
-          onPress={() =>
-            navigation.navigate('History')
-          }
+          onPress={goToHistory}
         />
 
         <NavItem
           icon="person-outline"
           label="About"
-          onPress={() =>
-            navigation.navigate('About')
-          }
+          onPress={goToAbout}
         />
       </View>
+
+      {/* Home Menu */}
+
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeMenu}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={closeMenu}
+          />
+
+          <View style={styles.menuSheet}>
+            <View style={styles.menuHandle} />
+
+            <View style={styles.menuHeader}>
+              <View style={styles.menuLogo}>
+                <Ionicons
+                  name="scan-outline"
+                  size={25}
+                  color={COLORS.primaryBlue}
+                />
+              </View>
+
+              <View style={styles.menuHeading}>
+                <Text
+                  style={styles.menuEyebrow}
+                >
+                  STYLE SCAN
+                </Text>
+
+                <Text style={styles.menuTitle}>
+                  Menu
+                </Text>
+              </View>
+
+              <Pressable
+                style={
+                  styles.menuCloseButton
+                }
+                onPress={closeMenu}
+              >
+                <Ionicons
+                  name="close"
+                  size={22}
+                  color={COLORS.text}
+                />
+              </Pressable>
+            </View>
+
+            <Text style={styles.menuIntro}>
+              Explore your StyleScan tools and
+              personalized grooming experience.
+            </Text>
+
+            <MenuItem
+              icon="home-outline"
+              title="Home"
+              subtitle="Return to your dashboard"
+              onPress={closeMenu}
+            />
+
+            <MenuItem
+              icon="scan-outline"
+              title="Face Scan"
+              subtitle="Analyze your facial features"
+              onPress={goToScan}
+            />
+
+            <MenuItem
+              icon="time-outline"
+              title="Scan History"
+              subtitle="Review previous StyleScan activity"
+              onPress={goToHistory}
+            />
+
+            <MenuItem
+              icon="information-circle-outline"
+              title="About StyleScan"
+              subtitle="Learn how StyleScan works"
+              onPress={goToAbout}
+            />
+
+            <View style={styles.menuFooter}>
+              <Ionicons
+                name="sparkles"
+                size={15}
+                color={COLORS.primaryBlue}
+              />
+
+              <Text
+                style={styles.menuFooterText}
+              >
+                AI-powered grooming guidance
+                made for your features.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+// ------------------------------------------------------
+// Action Card
+// ------------------------------------------------------
 
 type ActionCardProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -312,6 +431,10 @@ function ActionCard({
   );
 }
 
+// ------------------------------------------------------
+// Bottom Nav Item
+// ------------------------------------------------------
+
 type NavItemProps = {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
@@ -353,6 +476,61 @@ function NavItem({
   );
 }
 
+// ------------------------------------------------------
+// Menu Item
+// ------------------------------------------------------
+
+type MenuItemProps = {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+};
+
+function MenuItem({
+  icon,
+  title,
+  subtitle,
+  onPress,
+}: MenuItemProps) {
+  return (
+    <Pressable
+      style={styles.menuItem}
+      onPress={onPress}
+    >
+      <View style={styles.menuItemIcon}>
+        <Ionicons
+          name={icon}
+          size={23}
+          color={COLORS.primaryBlue}
+        />
+      </View>
+
+      <View style={styles.menuItemContent}>
+        <Text style={styles.menuItemTitle}>
+          {title}
+        </Text>
+
+        <Text
+          style={styles.menuItemSubtitle}
+        >
+          {subtitle}
+        </Text>
+      </View>
+
+      <Ionicons
+        name="chevron-forward"
+        size={20}
+        color={COLORS.muted}
+      />
+    </Pressable>
+  );
+}
+
+// ------------------------------------------------------
+// Styles
+// ------------------------------------------------------
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -363,6 +541,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 30,
   },
+
+  // Header
 
   header: {
     height: 70,
@@ -385,6 +565,8 @@ const styles = StyleSheet.create({
     color: COLORS.primaryBlue,
   },
 
+  // Welcome
+
   welcome: {
     marginTop: 14,
     marginBottom: 18,
@@ -404,6 +586,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     maxWidth: 330,
   },
+
+  // Scan Card
 
   scanCard: {
     minHeight: 245,
@@ -498,6 +682,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 7,
   },
 
+  // Action Cards
+
   sectionTitle: {
     color: COLORS.secondary,
     fontSize: 13,
@@ -545,6 +731,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
+  // AI Banner
+
   aiBanner: {
     marginTop: 14,
     padding: 16,
@@ -582,6 +770,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
 
+  // Bottom Nav
+
   bottomNav: {
     height: 88,
     backgroundColor: '#0B0E15',
@@ -606,5 +796,144 @@ const styles = StyleSheet.create({
   navLabelActive: {
     color: COLORS.primaryBlue,
     fontWeight: '600',
+  },
+
+  // Menu Modal
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor:
+      'rgba(0,0,0,0.68)',
+    justifyContent: 'flex-end',
+  },
+
+  menuSheet: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 20,
+    paddingTop: 11,
+    paddingBottom: 30,
+  },
+
+  menuHandle: {
+    width: 42,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.border,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+
+  menuHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 13,
+  },
+
+  menuLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#171D31',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  menuHeading: {
+    flex: 1,
+  },
+
+  menuEyebrow: {
+    color: COLORS.primaryBlue,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+  },
+
+  menuTitle: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
+  menuCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  menuIntro: {
+    color: COLORS.secondary,
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 17,
+  },
+
+  menuItem: {
+    minHeight: 74,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  menuItemIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: '#171D31',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 13,
+  },
+
+  menuItemContent: {
+    flex: 1,
+  },
+
+  menuItemTitle: {
+    color: COLORS.text,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+
+  menuItemSubtitle: {
+    color: COLORS.secondary,
+    fontSize: 11,
+    marginTop: 3,
+  },
+
+  menuFooter: {
+    marginTop: 6,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: '#111629',
+    borderWidth: 1,
+    borderColor:
+      'rgba(98,132,255,0.22)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  menuFooterText: {
+    flex: 1,
+    color: COLORS.secondary,
+    fontSize: 11,
+    lineHeight: 16,
+    marginLeft: 9,
   },
 });
