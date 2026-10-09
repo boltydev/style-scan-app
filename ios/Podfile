@@ -35,5 +35,20 @@ target 'StyleScan' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Several third-party pods (mostly Google's *_Privacy resource bundle
+    # targets) ship a hardcoded IPHONEOS_DEPLOYMENT_TARGET well below what
+    # current Xcode toolchains still support, which fails the build outright
+    # ("range of supported deployment target versions is 15.0 to ...").
+    # Clamp every target up to this project's minimum instead.
+    min_ios_version = Gem::Version.new('15.5')
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        current = Gem::Version.new(config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] || '0')
+        if current < min_ios_version
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version.to_s
+        end
+      end
+    end
   end
 end

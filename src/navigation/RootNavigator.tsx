@@ -9,6 +9,7 @@ import ScanScreen from '../screens/ScanScreen';
 import ResultsScreen from '../screens/ResultsScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import AboutScreen from '../screens/AboutScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,28 +42,35 @@ export function RootNavigator() {
         name="Scan"
         component={ScanScreen}
         options={{
-          title: 'Scan Your Face',
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="Results"
         component={ResultsScreen}
         options={{
-          title: 'Your Results',
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="Recommendations"
         component={RecommendationsScreen}
         options={{
-          title: 'Style Picks',
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="About"
         component={AboutScreen}
         options={{
-          title: 'About',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          headerShown: false,
         }}
       />
     </Stack.Navigator>
