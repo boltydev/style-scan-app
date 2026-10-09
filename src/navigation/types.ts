@@ -11,6 +11,7 @@ export type RootStackParamList = {
     data: string;
   };
   About: undefined;
+  History: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<

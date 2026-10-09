@@ -1,4 +1,5 @@
-import { FileAccess } from 'react-native-file-access';
+import { FileSystem } from 'react-native-file-access';
+import Config from 'react-native-config';
 import type { FaceGeometry, ScanResult } from './types';
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -7,25 +8,20 @@ const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 // Before shipping this app, move this call to a backend server you control,
 // so the key never lives inside the app itself.
 // Get your API key from: https://platform.openai.com/api-keys
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || "YOUR_OPENAI_API_KEY";
+const OPENAI_API_KEY = Config.OPENAI_API_KEY;
 
 export async function scanFace(
   photoUri: string,
   geometry: FaceGeometry | null
 ): Promise<ScanResult> {
-  if (OPENAI_API_KEY === "YOUR_OPENAI_API_KEY") {
+  if (!OPENAI_API_KEY) {
     throw new Error(
-      "OpenAI API key not set. Set REACT_APP_OPENAI_API_KEY environment variable."
+      "OpenAI API key not set. Add OPENAI_API_KEY to your .env file (see .env.example) and rebuild the app."
     );
   }
 
   // Convert file URI to base64
-  const base64 = await FileAccess.readFile(photoUri, 'utf8')
-    .then(data => Buffer.from(data).toString('base64'))
-    .catch(async () => {
-      // If direct read fails, try reading as base64
-      return await FileAccess.readFile(photoUri, 'base64');
-    });
+  const base64 = await FileSystem.readFile(photoUri, 'base64');
 
   const geometryNote = geometry
     ? `On-device face detection found a face at roughly ${geometry.bounds.width}x${geometry.bounds.height}px, head roll ${geometry.rollAngle.toFixed(1)}°, yaw ${geometry.yawAngle.toFixed(1)}°.`

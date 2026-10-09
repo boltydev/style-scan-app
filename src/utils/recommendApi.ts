@@ -1,3 +1,4 @@
+import Config from "react-native-config";
 import type { ScanResult, RecommendationResult } from "./types";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -6,12 +7,12 @@ const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 // Before shipping this app, move this call to a backend server you control,
 // so the key never lives inside the app itself.
 // Get your API key from: https://platform.openai.com/api-keys
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY || "YOUR_OPENAI_API_KEY";
+const OPENAI_API_KEY = Config.OPENAI_API_KEY;
 
 export async function getRecommendations(scan: ScanResult): Promise<RecommendationResult> {
-  if (OPENAI_API_KEY === "YOUR_OPENAI_API_KEY") {
+  if (!OPENAI_API_KEY) {
     throw new Error(
-      "OpenAI API key not set. Set REACT_APP_OPENAI_API_KEY environment variable."
+      "OpenAI API key not set. Add OPENAI_API_KEY to your .env file (see .env.example) and rebuild the app."
     );
   }
 
