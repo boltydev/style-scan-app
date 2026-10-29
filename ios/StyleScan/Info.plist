@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow StyleScan to access your camera to scan your face.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Lune AI connects to a local development server to analyze photos and provide grooming recommendations.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

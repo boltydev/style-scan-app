@@ -1,72 +1,36 @@
-import Config from "react-native-config";
-import type { ScanResult, RecommendationResult } from "./types";
+import type {
+  ScanResult,
+  RecommendationResult,
+} from './types';
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+import { BACKEND_BASE_URL } from './backendConfig';
 
-// ⚠️ IMPORTANT: Never hardcode API keys in your app!
-// Before shipping this app, move this call to a backend server you control,
-// so the key never lives inside the app itself.
-// Get your API key from: https://platform.openai.com/api-keys
-const OPENAI_API_KEY = Config.OPENAI_API_KEY;
+export async function getRecommendations(
+  scan: ScanResult
+): Promise<RecommendationResult> {
 
-export async function getRecommendations(scan: ScanResult): Promise<RecommendationResult> {
-  if (!OPENAI_API_KEY) {
-    throw new Error(
-      "OpenAI API key not set. Add OPENAI_API_KEY to your .env file (see .env.example) and rebuild the app."
-    );
-  }
-
-  const systemPrompt = `You are a friendly men's grooming and hairstyling expert. Based on structured face-scan data (face shape, hair length, skin tone, facial hair), you recommend hairstyles and, if relevant, beard styles. You respond with ONLY valid JSON, no markdown, no extra commentary.`;
-
-  const userPrompt = `Here is a person's face scan data:
-${JSON.stringify(scan, null, 2)}
-
-Based on this data, recommend 3 hairstyles and (if facial hair is relevant — i.e. they currently have or could grow facial hair) up to 3 beard styles. If facial hair clearly isn't applicable, return an empty array for beardStyles.
-
-Respond with ONLY this exact JSON shape:
-{
-  "hairstyles": [
-    { "name": "<style name>", "reason": "<one sentence tailored to their face shape, current hair length, and skin tone>" }
-  ],
-  "beardStyles": [
-    { "name": "<style name>", "reason": "<one sentence tailored to their face shape>" }
-  ],
-  "summary": "<2-3 sentence friendly overall styling summary>"
-}`;
-
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      max_tokens: 900,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      `Recommendations failed (${response.status}): ${
-        errorData.error?.message || "Unknown error"
-      }. Please check your API key and try again.`
-    );
-  }
+  const response = await fetch(
+    `${BACKEND_BASE_URL}/api/recommendations`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        scan,
+      }),
+    }
+  );
 
   const data = await response.json();
-  const raw = data.choices?.[0]?.message?.content || "";
 
-  if (!raw) {
-    throw new Error("No response from OpenAI. Please try again.");
+  if (!response.ok) {
+    throw new Error(
+      typeof data.error === 'string'
+        ? data.error
+        : `Recommendations failed (${response.status}).`
+    );
   }
 
-  const cleaned = raw.replace(/```json|```/g, "").trim();
-  return JSON.parse(cleaned) as RecommendationResult;
+  return data as RecommendationResult;
 }
