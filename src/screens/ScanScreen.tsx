@@ -18,16 +18,14 @@ import {
 } from 'react-native';
 
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { useFaceDetection } from '../hooks/useFaceDetection';
-import { scanFace } from '../utils/scanApi';
-import { saveScan } from '../utils/profileApi';
 
 import type { RootStackScreenProps } from '../navigation/types';
-import type { ScanResult } from '../utils/types';
 
 type Props = RootStackScreenProps<'Scan'>;
 
@@ -196,7 +194,23 @@ export default function ScanScreen({
           flash: 'off',
         });
 
-      setPhotoUri(`file://${photo.path}`);
+      // The camera writes sensor-oriented pixels plus an EXIF rotation flag.
+      // ML Kit ignores that flag, so redraw the photo upright (and shrink it
+      // for a faster OpenAI upload) before using it anywhere.
+      const upright =
+        await ImageResizer.createResizedImage(
+          `file://${photo.path}`,
+          1600,
+          1600,
+          'JPEG',
+          90,
+          0,
+          null,
+          false,
+          { mode: 'contain', onlyScaleDown: true },
+        );
+
+      setPhotoUri(upright.uri);
       setStep('preview');
     } catch {
       Alert.alert(
@@ -224,76 +238,29 @@ export default function ScanScreen({
     setStep('working');
 
     setStatusText(
-      'Detecting your facial features...',
+      'Reading your facial features on-device...',
     );
 
     try {
-      const geometry =
+      const reading =
         await detectFace(photoUri);
 
-      if (!geometry) {
-        Alert.alert(
-          'No face detected',
-          'We could not clearly detect a face in the photo.',
-          [
-            {
-              text: 'Retake',
-              onPress: retake,
-            },
-            {
-              text: 'Continue Anyway',
-              onPress: () =>
-                finishScan(null),
-            },
-          ],
-        );
+      // Nothing has been sent anywhere yet. The Face Reading screen shows
+      // what the phone found and lets the user decide whether to send the
+      // photo to OpenAI.
+      navigation.navigate('FaceReading', {
+        photoUri,
+        reading: reading
+          ? JSON.stringify(reading)
+          : null,
+      });
 
-        return;
-      }
-
-      await finishScan(geometry);
+      setStep('preview');
     } catch (error) {
       setErrorText(
         error instanceof Error
           ? error.message
           : 'Something went wrong while scanning your face.',
-      );
-
-      setStep('error');
-    }
-  }
-
-  async function finishScan(
-    geometry: Parameters<
-      typeof scanFace
-    >[1],
-  ) {
-    setStatusText(
-      'Creating your StyleScan profile...',
-    );
-
-    try {
-      const result: ScanResult =
-        await scanFace(
-          photoUri as string,
-          geometry,
-        );
-
-      // Best-effort: don't block the results screen on the backend save,
-      // and don't fail the scan if Supabase isn't configured yet.
-      saveScan(result).catch((e) => {
-        console.warn('Could not save scan to profile:', e instanceof Error ? e.message : e);
-      });
-
-      navigation.navigate('Results', {
-        data: JSON.stringify(result),
-        photoUri: photoUri as string,
-      });
-    } catch (error) {
-      setErrorText(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong while analyzing your photo.',
       );
 
       setStep('error');
@@ -695,6 +662,7 @@ export default function ScanScreen({
         device={device}
         isActive={step === 'camera'}
         photo={true}
+        outputOrientation="preview"
       />
 
       <View style={styles.cameraShade} />

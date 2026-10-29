@@ -16,7 +16,7 @@ export async function getRecommendations(scan: ScanResult): Promise<Recommendati
     );
   }
 
-  const systemPrompt = `You are a friendly men's grooming and hairstyling expert. Based on structured face-scan data (face shape, skin tone, facial hair), you recommend hairstyles and, if relevant, beard styles. You respond with ONLY valid JSON, no markdown, no extra commentary.`;
+  const systemPrompt = `You are a friendly men's grooming and hairstyling expert. Based on structured face-scan data (face shape, hair length, skin tone, facial hair), you recommend hairstyles and, if relevant, beard styles. You respond with ONLY valid JSON, no markdown, no extra commentary.`;
 
   const userPrompt = `Here is a person's face scan data:
 ${JSON.stringify(scan, null, 2)}
@@ -26,7 +26,7 @@ Based on this data, recommend 3 hairstyles and (if facial hair is relevant — i
 Respond with ONLY this exact JSON shape:
 {
   "hairstyles": [
-    { "name": "<style name>", "reason": "<one sentence tailored to their face shape and skin tone>" }
+    { "name": "<style name>", "reason": "<one sentence tailored to their face shape, current hair length, and skin tone>" }
   ],
   "beardStyles": [
     { "name": "<style name>", "reason": "<one sentence tailored to their face shape>" }
@@ -41,7 +41,8 @@ Respond with ONLY this exact JSON shape:
       Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "gpt-4-turbo",
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
