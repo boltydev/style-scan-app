@@ -6,13 +6,47 @@ export interface FaceGeometry {
   smilingProbability?: number;
 }
 
+export type FaceShape = "Oval" | "Round" | "Square" | "Heart" | "Diamond" | "Oblong" | "Unknown";
+
+// Face proportions measured from the ML Kit contour, relative to cheekbone width.
+export interface FaceMeasurements {
+  lengthToWidth: number;
+  foreheadToCheek: number;
+  jawToCheek: number;
+}
+
+export interface FaceShapeEstimate {
+  shape: FaceShape;
+  confidence: "High" | "Medium" | "Low";
+  runnerUp: FaceShape;
+  notes: string;
+  measurements: FaceMeasurements;
+}
+
+// Everything the phone can tell about the face before anything is sent to OpenAI.
+export interface FaceReading {
+  geometry: FaceGeometry;
+  faceShape: FaceShapeEstimate | null;
+  pitchAngle: number;
+  leftEyeOpenProbability?: number;
+  rightEyeOpenProbability?: number;
+  // Face width as a fraction of the photo width.
+  frameCoverage: number | null;
+}
+
 // The structured result we ask the AI to return.
 // This is designed to be easy to hand to OpenAI afterward
 // for hairstyle + beard style recommendations.
 export interface ScanResult {
   faceShape: {
-    shape: "Oval" | "Round" | "Square" | "Heart" | "Diamond" | "Oblong" | "Unknown";
+    shape: FaceShape;
     confidence: "High" | "Medium" | "Low";
+    notes: string;
+  };
+  // Optional because scans saved before this field existed (and rows loaded
+  // back from Supabase, which has no column for it) won't include it.
+  hairLength?: {
+    length: string;      // e.g. "Bald", "Buzzed", "Short", "Medium", "Long"
     notes: string;
   };
   skinTone: {

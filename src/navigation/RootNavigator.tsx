@@ -6,6 +6,7 @@ import type { RootStackParamList } from './types';
 // Screens
 import HomeScreen from '../screens/HomeScreen';
 import ScanScreen from '../screens/ScanScreen';
+import FaceReadingScreen from '../screens/FaceReadingScreen';
 import ResultsScreen from '../screens/ResultsScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import AboutScreen from '../screens/AboutScreen';
@@ -41,6 +42,13 @@ export function RootNavigator() {
       <Stack.Screen
         name="Scan"
         component={ScanScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="FaceReading"
+        component={FaceReadingScreen}
         options={{
           headerShown: false,
         }}

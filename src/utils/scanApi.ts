@@ -1,6 +1,6 @@
 import { FileSystem } from 'react-native-file-access';
 import Config from 'react-native-config';
-import type { FaceGeometry, ScanResult } from './types';
+import type { FaceReading, ScanResult } from './types';
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -12,7 +12,7 @@ const OPENAI_API_KEY = Config.OPENAI_API_KEY;
 
 export async function scanFace(
   photoUri: string,
-  geometry: FaceGeometry | null
+  reading: FaceReading | null
 ): Promise<ScanResult> {
   if (!OPENAI_API_KEY) {
     throw new Error(
@@ -23,13 +23,18 @@ export async function scanFace(
   // Convert file URI to base64
   const base64 = await FileSystem.readFile(photoUri, 'base64');
 
+  const geometry = reading?.geometry;
+  const estimate = reading?.faceShape;
   const geometryNote = geometry
-    ? `On-device face detection found a face at roughly ${geometry.bounds.width}x${geometry.bounds.height}px, head roll ${geometry.rollAngle.toFixed(1)}°, yaw ${geometry.yawAngle.toFixed(1)}°.`
+    ? `On-device face detection found a face at roughly ${Math.round(geometry.bounds.width)}x${Math.round(geometry.bounds.height)}px, head roll ${geometry.rollAngle.toFixed(1)}°, yaw ${geometry.yawAngle.toFixed(1)}°.` +
+      (estimate
+        ? ` Its contour measurements estimate a ${estimate.shape} face shape (${estimate.confidence} confidence; length/width ${estimate.measurements.lengthToWidth.toFixed(2)}, forehead/cheek ${estimate.measurements.foreheadToCheek.toFixed(2)}, jaw/cheek ${estimate.measurements.jawToCheek.toFixed(2)}). Treat this as a hint and judge the face shape from the image yourself.`
+        : "")
     : "On-device face detection did not find a clear face — analyze directly from the image.";
 
-  const systemPrompt = `You are a precise visual analysis assistant. You assess face shape, skin tone, and presence/type of facial hair from a photo. You respond with ONLY valid JSON, no markdown, no extra commentary.`;
+  const systemPrompt = `You are a precise visual analysis assistant. You assess face shape, hair length, skin tone, and presence/type of facial hair from a photo. You respond with ONLY valid JSON, no markdown, no extra commentary.`;
 
-  const userPrompt = `Analyze this photo and assess: face shape, skin tone, and facial hair. ${geometryNote}
+  const userPrompt = `Analyze this photo and assess: face shape, hair length (scalp hair, not facial hair), skin tone, and facial hair. ${geometryNote}
 
 Respond with ONLY this exact JSON shape, nothing else:
 {
@@ -37,6 +42,10 @@ Respond with ONLY this exact JSON shape, nothing else:
     "shape": "<Oval|Round|Square|Heart|Diamond|Oblong|Unknown>",
     "confidence": "<High|Medium|Low>",
     "notes": "<one short sentence on why>"
+  },
+  "hairLength": {
+    "length": "<Bald|Buzzed|Short|Medium|Long|Unknown>",
+    "notes": "<one short sentence>"
   },
   "skinTone": {
     "tone": "<Fair|Light|Medium|Tan|Deep>",
@@ -58,7 +67,8 @@ Respond with ONLY this exact JSON shape, nothing else:
       Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",

@@ -46,7 +46,8 @@ export default function ResultsScreen({
   route,
   navigation,
 }: Props) {
-  const { data, photoUri } = route.params;
+  const { data, photoUri, onDeviceShape } =
+    route.params;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -68,6 +69,10 @@ export default function ResultsScreen({
         return null;
       }
     }, [data]);
+
+  const hairLength =
+    result?.hairLength?.length ??
+    'Not recorded';
 
   if (!result) {
     return (
@@ -290,9 +295,9 @@ export default function ResultsScreen({
 
           <View style={styles.heroMetrics}>
             <HeroMetric
-              icon="scan-outline"
-              label="Shape"
-              value={result.faceShape.shape}
+              icon="cut-outline"
+              label="Hair"
+              value={hairLength}
             />
 
             <View
@@ -354,6 +359,13 @@ export default function ResultsScreen({
             }
           />
 
+          {onDeviceShape ? (
+            <ResultRow
+              label="On-device estimate"
+              value={onDeviceShape}
+            />
+          ) : null}
+
           <ConfidenceMeter
             confidence={
               result.faceShape.confidence
@@ -365,6 +377,29 @@ export default function ResultsScreen({
           <Text style={styles.insightText}>
             {result.faceShape.notes}
           </Text>
+        </InsightCard>
+
+        {/* Hair Length */}
+
+        <InsightCard
+          icon="cut-outline"
+          eyebrow="HAIR PROFILE"
+          title="Hair Length"
+        >
+          <ResultRow
+            label="Current length"
+            value={hairLength}
+          />
+
+          {result.hairLength?.notes ? (
+            <>
+              <View style={styles.cardDivider} />
+
+              <Text style={styles.insightText}>
+                {result.hairLength.notes}
+              </Text>
+            </>
+          ) : null}
         </InsightCard>
 
         {/* Skin Tone */}
@@ -474,6 +509,11 @@ export default function ResultsScreen({
             />
 
             <SummaryTag
+              icon="cut-outline"
+              label={`${hairLength} hair`}
+            />
+
+            <SummaryTag
               icon="color-palette-outline"
               label={
                 result.skinTone.undertone
@@ -507,13 +547,16 @@ export default function ResultsScreen({
               </Text>
 
               <Text style={styles.ctaTitle}>
-                Discover your best styles.
+                Send to your AI stylist.
               </Text>
 
               <Text style={styles.ctaSubtitle}>
-                Turn your analysis into
-                personalized hairstyle and
-                facial-hair recommendations.
+                Your face shape, hair length,
+                skin tone, and facial hair are
+                sent to the StyleScan AI
+                assistant for personalized
+                hairstyle and beard picks.
+                Your photo is not sent.
               </Text>
             </View>
           </View>
@@ -536,7 +579,7 @@ export default function ResultsScreen({
             }
           >
             <Ionicons
-              name="sparkles-outline"
+              name="paper-plane-outline"
               size={20}
               color="#FFFFFF"
             />
@@ -546,7 +589,7 @@ export default function ResultsScreen({
                 styles.recommendButtonText
               }
             >
-              View Recommendations
+              Send to AI Stylist
             </Text>
 
             <Ionicons
