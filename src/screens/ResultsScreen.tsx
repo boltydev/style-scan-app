@@ -46,8 +46,12 @@ export default function ResultsScreen({
   route,
   navigation,
 }: Props) {
-  const { data, photoUri, onDeviceShape } =
-    route.params;
+  const {
+    data,
+    photoUri,
+    onDeviceShape,
+    scanId,
+  } = route.params;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -187,7 +191,9 @@ export default function ResultsScreen({
           <Text
             style={styles.completeBadgeText}
           >
-            ANALYSIS COMPLETE
+            {scanId
+              ? 'SAVED TO YOUR PROFILE'
+              : 'ANALYSIS COMPLETE'}
           </Text>
 
           <Ionicons
@@ -574,6 +580,7 @@ export default function ResultsScreen({
                   data: JSON.stringify(
                     result,
                   ),
+                  scanId,
                 },
               )
             }

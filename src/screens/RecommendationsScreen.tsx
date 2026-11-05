@@ -18,6 +18,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { getRecommendations } from '../utils/recommendApi';
+import {
+  getSavedScan,
+  saveRecommendations,
+} from '../utils/profileApi';
 
 import type {
   RootStackScreenProps,
@@ -57,7 +61,7 @@ export default function RecommendationsScreen({
   route,
   navigation,
 }: Props) {
-  const { data } = route.params;
+  const { data, scanId } = route.params;
 
   const [loading, setLoading] =
     useState(true);
@@ -105,7 +109,29 @@ export default function RecommendationsScreen({
     setLoading(true);
     setError('');
 
-    getRecommendations(scan)
+    // Reuse recommendations already saved with this scan; otherwise ask
+    // the AI stylist and save the answer to the user's profile.
+    (scanId ? getSavedScan(scanId) : Promise.resolve(null))
+      .catch(() => null)
+      .then(async (saved) => {
+        if (saved?.recommendations) {
+          return saved.recommendations;
+        }
+
+        const result =
+          await getRecommendations(scan);
+
+        if (scanId) {
+          saveRecommendations(
+            scanId,
+            result,
+          ).catch((e) => {
+            console.warn('Could not save recommendations:', e instanceof Error ? e.message : e);
+          });
+        }
+
+        return result;
+      })
       .then((result) => {
         setRecs(result);
       })
@@ -119,7 +145,7 @@ export default function RecommendationsScreen({
       .finally(() => {
         setLoading(false);
       });
-  }, [scan]);
+  }, [scan, scanId]);
 
   // ------------------------------------------------------
   // Loading
