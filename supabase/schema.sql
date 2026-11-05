@@ -56,6 +56,8 @@ create table if not exists public.scans (
   face_shape text not null,
   face_shape_confidence text not null,
   face_shape_notes text,
+  hair_length text,
+  hair_length_notes text,
   skin_tone text not null,
   undertone text not null,
   skin_tone_notes text,
@@ -63,8 +65,16 @@ create table if not exists public.scans (
   facial_hair_type text,
   facial_hair_notes text,
   summary text,
+  on_device_face_shape text,
+  recommendations jsonb,
   created_at timestamptz not null default now()
 );
+
+-- For databases created before these columns existed.
+alter table public.scans add column if not exists hair_length text;
+alter table public.scans add column if not exists hair_length_notes text;
+alter table public.scans add column if not exists on_device_face_shape text;
+alter table public.scans add column if not exists recommendations jsonb;
 
 create index if not exists scans_user_id_created_at_idx
   on public.scans (user_id, created_at desc);
@@ -78,6 +88,10 @@ create policy "Users can view their own scans"
 create policy "Users can insert their own scans"
   on public.scans for insert
   with check (auth.uid() = user_id);
+
+create policy "Users can update their own scans"
+  on public.scans for update
+  using (auth.uid() = user_id);
 
 create policy "Users can delete their own scans"
   on public.scans for delete
