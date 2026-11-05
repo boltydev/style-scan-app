@@ -13,9 +13,12 @@ export type RootStackParamList = {
     photoUri: string;
     // On-device face shape estimate, shown next to the AI's answer.
     onDeviceShape?: string;
+    // Id of the scan saved to the user's profile, if saving succeeded.
+    scanId?: string;
   };
   Recommendations: {
     data: string;
+    scanId?: string;
   };
   About: undefined;
   History: undefined;

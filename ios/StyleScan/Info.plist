@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow StyleScan to access your camera to scan your face.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>StyleScan connects to a development server on your local network to analyze photos and provide grooming recommendations.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

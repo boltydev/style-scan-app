@@ -1,5 +1,7 @@
 import React, {
+  useCallback,
   useLayoutEffect,
+  useState,
 } from 'react';
 
 import {
@@ -7,11 +9,23 @@ import {
   Text,
   StyleSheet,ScrollView,
   Pressable,
+  Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import {
+  deleteScan,
+  getScanHistory,
+  photoUri,
+  type SavedScan,
+} from '../utils/profileApi';
 
 import type {
   RootStackScreenProps,
@@ -43,11 +57,76 @@ const COLORS = {
 export default function HistoryScreen({
   navigation,
 }: Props) {
+  const [scans, setScans] =
+    useState<SavedScan[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, [navigation]);
+
+  // Reload whenever the screen comes into view, so a scan finished a
+  // moment ago shows up right away.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      getScanHistory()
+        .then((history) => {
+          if (active) setScans(history);
+        })
+        .catch(() => {
+          if (active) setScans([]);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
+
+  function openScan(scan: SavedScan) {
+    navigation.navigate('Results', {
+      data: JSON.stringify(scan.result),
+      photoUri: photoUri(scan) ?? '',
+      onDeviceShape: scan.onDeviceShape,
+      scanId: scan.id,
+    });
+  }
+
+  function confirmDelete(scan: SavedScan) {
+    Alert.alert(
+      'Delete this scan?',
+      'It will be removed from your profile.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setScans((current) =>
+              current.filter(
+                (s) => s.id !== scan.id,
+              ),
+            );
+            deleteScan(scan.id).catch(() => {});
+          },
+        },
+      ],
+    );
+  }
+
+  const withRecommendations =
+    scans.filter(
+      (s) => s.recommendations,
+    ).length;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,7 +250,7 @@ export default function HistoryScreen({
 
           <View style={styles.statsRow}>
             <HistoryStat
-              value="0"
+              value={String(scans.length)}
               label="Saved Scans"
             />
 
@@ -180,7 +259,9 @@ export default function HistoryScreen({
             />
 
             <HistoryStat
-              value="0"
+              value={String(
+                withRecommendations,
+              )}
               label="Style Profiles"
             />
 
@@ -189,233 +270,174 @@ export default function HistoryScreen({
             />
 
             <HistoryStat
-              value="0"
-              label="Saved Looks"
+              value={
+                scans[0]?.result.faceShape
+                  .shape ?? '—'
+              }
+              label="Latest Shape"
             />
           </View>
         </View>
 
-        {/* Empty State */}
-
-        <View style={styles.emptyCard}>
-          <View style={styles.emptyVisual}>
-            <View style={styles.emptyOrbit}>
-              <View
-                style={styles.emptyOrbitInner}
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={COLORS.primaryBlue}
+            style={styles.loadingSpinner}
+          />
+        ) : scans.length > 0 ? (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text
+                style={styles.sectionEyebrow}
               >
+                SAVED SCANS
+              </Text>
+
+              <Text
+                style={styles.sectionTitle}
+              >
+                Your past results.
+              </Text>
+            </View>
+
+            {scans.map((scan) => (
+              <ScanCard
+                key={scan.id}
+                scan={scan}
+                onPress={() => openScan(scan)}
+                onDelete={() =>
+                  confirmDelete(scan)
+                }
+              />
+            ))}
+          </>
+        ) : (
+          <>
+            {/* Empty State */}
+
+            <View style={styles.emptyCard}>
+              <View style={styles.emptyVisual}>
+                <View style={styles.emptyOrbit}>
+                  <View
+                    style={styles.emptyOrbitInner}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={39}
+                      color={COLORS.primaryBlue}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.emptyBadge}>
                 <Ionicons
-                  name="time-outline"
-                  size={39}
+                  name="sparkles-outline"
+                  size={14}
                   color={COLORS.primaryBlue}
                 />
+
+                <Text
+                  style={styles.emptyBadgeText}
+                >
+                  READY WHEN YOU ARE
+                </Text>
               </View>
-            </View>
-          </View>
 
-          <View style={styles.emptyBadge}>
-            <Ionicons
-              name="sparkles-outline"
-              size={14}
-              color={COLORS.primaryBlue}
-            />
+              <Text style={styles.emptyTitle}>
+                Your first scan starts here.
+              </Text>
 
-            <Text
-              style={styles.emptyBadgeText}
-            >
-              READY WHEN YOU ARE
-            </Text>
-          </View>
+              <Text style={styles.emptyText}>
+                Every completed StyleScan is saved
+                to your profile and will appear
+                here.
+              </Text>
 
-          <Text style={styles.emptyTitle}>
-            Your first scan starts here.
-          </Text>
-
-          <Text style={styles.emptyText}>
-            Your completed StyleScan sessions
-            will appear here when saved history
-            becomes available.
-          </Text>
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.scanButton,
-              pressed &&
-                styles.scanButtonPressed,
-            ]}
-            onPress={() =>
-              navigation.navigate('Scan')
-            }
-          >
-            <View
-              style={styles.scanButtonIcon}
-            >
-              <Ionicons
-                name="scan-outline"
-                size={20}
-                color="#FFFFFF"
-              />
-            </View>
-
-            <Text
-              style={styles.scanButtonText}
-            >
-              Start Your First Scan
-            </Text>
-
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="#FFFFFF"
-            />
-          </Pressable>
-        </View>
-
-        {/* History Features */}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionEyebrow}>
-            HISTORY EXPERIENCE
-          </Text>
-
-          <Text style={styles.sectionTitle}>
-            Built for comparison.
-          </Text>
-
-          <Text
-            style={styles.sectionSubtitle}
-          >
-            Your history can become a personal
-            timeline for revisiting scans,
-            recommendations, and favorite looks.
-          </Text>
-        </View>
-
-        <HistoryFeature
-          number="01"
-          icon="document-text-outline"
-          title="Past Analysis"
-          description="Return to previous face-shape, complexion, and facial-hair results."
-        />
-
-        <HistoryFeature
-          number="02"
-          icon="sparkles-outline"
-          title="Recommendation History"
-          description="Revisit hairstyle and facial-hair suggestions from earlier StyleScan sessions."
-        />
-
-        <HistoryFeature
-          number="03"
-          icon="git-compare-outline"
-          title="Compare Profiles"
-          description="Compare different scans and grooming choices over time."
-        />
-
-        <HistoryFeature
-          number="04"
-          icon="bookmark-outline"
-          title="Favorite Looks"
-          description="Keep the styles you want to remember in one convenient place."
-        />
-
-        {/* Style Timeline */}
-
-        <View style={styles.timelineCard}>
-          <View style={styles.timelineGlow} />
-
-          <View style={styles.timelineHeader}>
-            <View
-              style={styles.timelineHeaderIcon}
-            >
-              <Ionicons
-                name="analytics-outline"
-                size={23}
-                color={COLORS.primaryBlue}
-              />
-            </View>
-
-            <View
-              style={styles.timelineHeading}
-            >
-              <Text
-                style={styles.timelineEyebrow}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.scanButton,
+                  pressed &&
+                    styles.scanButtonPressed,
+                ]}
+                onPress={() =>
+                  navigation.navigate('Scan')
+                }
               >
-                YOUR STYLE JOURNEY
+                <View
+                  style={styles.scanButtonIcon}
+                >
+                  <Ionicons
+                    name="scan-outline"
+                    size={20}
+                    color="#FFFFFF"
+                  />
+                </View>
+
+                <Text
+                  style={styles.scanButtonText}
+                >
+                  Start Your First Scan
+                </Text>
+
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color="#FFFFFF"
+                />
+              </Pressable>
+            </View>
+
+            {/* History Features */}
+
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionEyebrow}>
+                HISTORY EXPERIENCE
+              </Text>
+
+              <Text style={styles.sectionTitle}>
+                Built for comparison.
               </Text>
 
               <Text
-                style={styles.timelineTitle}
+                style={styles.sectionSubtitle}
               >
-                A timeline built around you.
+                Your history is a personal timeline
+                for revisiting scans and
+                recommendations.
               </Text>
             </View>
-          </View>
 
-          <Text style={styles.timelineText}>
-            As you complete future StyleScan
-            sessions, this space can give you a
-            simple way to revisit how your
-            grooming profile evolves.
-          </Text>
-
-          <View
-            style={styles.timelinePreview}
-          >
-            <TimelinePreviewItem
-              icon="scan-outline"
-              title="Face Scan"
-              status="Scan analysis"
+            <HistoryFeature
+              number="01"
+              icon="document-text-outline"
+              title="Past Analysis"
+              description="Return to previous face-shape, complexion, and facial-hair results."
             />
 
-            <View
-              style={styles.previewConnector}
-            />
-
-            <TimelinePreviewItem
+            <HistoryFeature
+              number="02"
               icon="sparkles-outline"
-              title="Style Profile"
-              status="Recommendations"
+              title="Recommendation History"
+              description="Revisit hairstyle and facial-hair suggestions from earlier StyleScan sessions."
             />
 
-            <View
-              style={styles.previewConnector}
+            <HistoryFeature
+              number="03"
+              icon="git-compare-outline"
+              title="Compare Profiles"
+              description="Compare different scans and grooming choices over time."
             />
 
-            <TimelinePreviewItem
+            <HistoryFeature
+              number="04"
               icon="bookmark-outline"
-              title="Saved Look"
-              status="Favorites"
+              title="Favorite Looks"
+              description="Keep the styles you want to remember in one convenient place."
             />
-          </View>
-        </View>
-
-        {/* History Availability */}
-
-        <View style={styles.infoCard}>
-          <View style={styles.infoIcon}>
-            <Ionicons
-              name="time-outline"
-              size={22}
-              color={COLORS.primaryBlue}
-            />
-          </View>
-
-          <View style={styles.infoContent}>
-            <Text style={styles.infoEyebrow}>
-              COMING TO HISTORY
-            </Text>
-
-            <Text style={styles.infoTitle}>
-              Your StyleScan timeline.
-            </Text>
-
-            <Text style={styles.infoText}>
-              Saved scan history will give you
-              one place to revisit previous
-              profiles and recommendations.
-            </Text>
-          </View>
-        </View>
+          </>
+        )}
       </ScrollView>
 
       {/* True Floating Navigation */}
@@ -452,6 +474,119 @@ export default function HistoryScreen({
         />
       </View>
     </SafeAreaView>
+  );
+}
+
+// ------------------------------------------------------
+// Scan Card
+// ------------------------------------------------------
+
+function ScanCard({
+  scan,
+  onPress,
+  onDelete,
+}: {
+  scan: SavedScan;
+  onPress: () => void;
+  onDelete: () => void;
+}) {
+  const uri = photoUri(scan);
+  const { result } = scan;
+
+  const date = new Date(
+    scan.createdAt,
+  ).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const time = new Date(
+    scan.createdAt,
+  ).toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.scanCard,
+        pressed && styles.scanCardPressed,
+      ]}
+      onPress={onPress}
+      onLongPress={onDelete}
+    >
+      {uri ? (
+        <Image
+          source={{ uri }}
+          style={styles.scanThumb}
+        />
+      ) : (
+        <View
+          style={[
+            styles.scanThumb,
+            styles.scanThumbEmpty,
+          ]}
+        >
+          <Ionicons
+            name="person-outline"
+            size={24}
+            color={COLORS.muted}
+          />
+        </View>
+      )}
+
+      <View style={styles.scanInfo}>
+        <Text style={styles.scanDate}>
+          {date} · {time}
+        </Text>
+
+        <Text style={styles.scanShape}>
+          {result.faceShape.shape} face
+        </Text>
+
+        <Text
+          style={styles.scanDetails}
+          numberOfLines={2}
+        >
+          {[
+            result.hairLength?.length &&
+              `${result.hairLength.length} hair`,
+            `${result.skinTone.tone} skin`,
+            result.facialHair.type,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Text>
+
+        {scan.recommendations ? (
+          <View style={styles.scanTag}>
+            <Ionicons
+              name="sparkles"
+              size={11}
+              color={COLORS.primaryBlue}
+            />
+
+            <Text style={styles.scanTagText}>
+              RECOMMENDATIONS SAVED
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      <Pressable
+        style={styles.scanDelete}
+        onPress={onDelete}
+        hitSlop={8}
+      >
+        <Ionicons
+          name="trash-outline"
+          size={18}
+          color={COLORS.muted}
+        />
+      </Pressable>
+    </Pressable>
   );
 }
 
@@ -534,44 +669,6 @@ function HistoryFeature({
 }
 
 // ------------------------------------------------------
-// Timeline Preview Item
-// ------------------------------------------------------
-
-function TimelinePreviewItem({
-  icon,
-  title,
-  status,
-}: {
-  icon: string;
-  title: string;
-  status: string;
-}) {
-  return (
-    <View style={styles.previewItem}>
-      <View style={styles.previewIcon}>
-        <Ionicons
-          name={icon}
-          size={20}
-          color={COLORS.primaryBlue}
-        />
-      </View>
-
-      <View style={styles.previewContent}>
-        <Text style={styles.previewTitle}>
-          {title}
-        </Text>
-
-        <Text style={styles.previewStatus}>
-          {status}
-        </Text>
-      </View>
-
-      <View style={styles.previewDot} />
-    </View>
-  );
-}
-
-// ------------------------------------------------------
 // Nav Item
 // ------------------------------------------------------
 
@@ -627,6 +724,85 @@ function NavItem({
 // ------------------------------------------------------
 
 const styles = StyleSheet.create({
+  // Saved scans
+
+  loadingSpinner: {
+    marginTop: 40,
+  },
+
+  scanCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 12,
+  },
+
+  scanCardPressed: {
+    opacity: 0.84,
+  },
+
+  scanThumb: {
+    width: 64,
+    height: 76,
+    borderRadius: 14,
+    resizeMode: 'cover',
+  },
+
+  scanThumbEmpty: {
+    backgroundColor:
+      'rgba(98,132,255,0.045)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  scanInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+
+  scanDate: {
+    color: COLORS.muted,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+
+  scanShape: {
+    color: COLORS.text,
+    fontSize: 17,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
+  scanDetails: {
+    color: COLORS.secondary,
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  scanTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 7,
+  },
+
+  scanTagText: {
+    color: COLORS.primaryBlue,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.9,
+  },
+
+  scanDelete: {
+    padding: 8,
+    marginLeft: 6,
+  },
+
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -1037,180 +1213,6 @@ const styles = StyleSheet.create({
   },
 
   featureDescription: {
-    color: COLORS.secondary,
-    fontSize: 10,
-    lineHeight: 16,
-    marginTop: 4,
-  },
-
-  // Timeline
-
-  timelineCard: {
-    marginTop: 19,
-    borderRadius: 22,
-    backgroundColor: '#0E1426',
-    borderWidth: 1,
-    borderColor: COLORS.borderBlue,
-    padding: 17,
-    overflow: 'hidden',
-  },
-
-  timelineGlow: {
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    borderRadius: 105,
-    backgroundColor:
-      'rgba(98,132,255,0.04)',
-    top: -100,
-    right: -80,
-  },
-
-  timelineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  timelineHeaderIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 15,
-    backgroundColor:
-      'rgba(98,132,255,0.10)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-
-  timelineHeading: {
-    flex: 1,
-  },
-
-  timelineEyebrow: {
-    color: COLORS.primaryBlue,
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 1.3,
-  },
-
-  timelineTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 3,
-  },
-
-  timelineText: {
-    color: COLORS.secondary,
-    fontSize: 11,
-    lineHeight: 18,
-    marginTop: 14,
-  },
-
-  timelinePreview: {
-    marginTop: 17,
-  },
-
-  previewItem: {
-    minHeight: 58,
-    borderRadius: 15,
-    backgroundColor:
-      'rgba(255,255,255,0.025)',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-
-  previewIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 11,
-    backgroundColor:
-      'rgba(98,132,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-
-  previewContent: {
-    flex: 1,
-  },
-
-  previewTitle: {
-    color: COLORS.text,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  previewStatus: {
-    color: COLORS.muted,
-    fontSize: 9,
-    marginTop: 2,
-  },
-
-  previewDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor:
-      'rgba(98,132,255,0.45)',
-  },
-
-  previewConnector: {
-    width: 1,
-    height: 10,
-    backgroundColor:
-      'rgba(98,132,255,0.18)',
-    marginLeft: 30,
-  },
-
-  // Information
-
-  infoCard: {
-    marginTop: 14,
-    borderRadius: 19,
-    backgroundColor:
-      'rgba(98,132,255,0.035)',
-    borderWidth: 1,
-    borderColor:
-      'rgba(98,132,255,0.13)',
-    padding: 15,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-
-  infoIcon: {
-    width: 43,
-    height: 43,
-    borderRadius: 13,
-    backgroundColor:
-      'rgba(98,132,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 11,
-  },
-
-  infoContent: {
-    flex: 1,
-  },
-
-  infoEyebrow: {
-    color: COLORS.primaryBlue,
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-  },
-
-  infoTitle: {
-    color: COLORS.text,
-    fontSize: 13,
-    fontWeight: '700',
-    marginTop: 3,
-  },
-
-  infoText: {
     color: COLORS.secondary,
     fontSize: 10,
     lineHeight: 16,

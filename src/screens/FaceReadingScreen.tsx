@@ -209,16 +209,21 @@ export default function FaceReadingScreen({
         reading,
       );
 
-      // Best-effort: don't block the results screen on the backend save,
-      // and don't fail the scan if Supabase isn't configured yet.
-      saveScan(result).catch((e) => {
+      // Saving to the profile should never block the results.
+      const saved = await saveScan(
+        result,
+        photoUri,
+        estimate?.shape,
+      ).catch((e) => {
         console.warn('Could not save scan to profile:', e instanceof Error ? e.message : e);
+        return null;
       });
 
       navigation.navigate('Results', {
         data: JSON.stringify(result),
         photoUri,
         onDeviceShape: estimate?.shape,
+        scanId: saved?.id,
       });
     } catch (error) {
       setErrorText(
